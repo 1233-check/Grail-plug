@@ -247,3 +247,72 @@ button{cursor:pointer;border:none;background:none;font-family:inherit}
   .size-filter{gap:6px}
   .size-btn{padding:8px 14px;font-size:11px}
 }
+
+/* ===== HEADER ICONS ===== */
+.header-icon-btn{position:relative;display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;transition:var(--transition);color:var(--text)}
+.header-icon-btn:hover{background:var(--highlight)}
+.cart-badge{position:absolute;top:-2px;right:-2px;width:18px;height:18px;border-radius:50%;background:var(--sold);color:#FFF;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.user-avatar{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#FFF;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;letter-spacing:0}
+
+/* ===== USER DROPDOWN ===== */
+.user-menu-wrap{position:relative}
+.user-dropdown{position:absolute;top:calc(100% + 8px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:0 8px 30px rgba(0,0,0,0.12);min-width:220px;opacity:0;visibility:hidden;transform:translateY(-8px);transition:var(--transition);z-index:101;overflow:hidden}
+.user-dropdown.active{opacity:1;visibility:visible;transform:translateY(0)}
+.dropdown-header{padding:16px;border-bottom:1px solid var(--border)}
+.dropdown-name{display:block;font-weight:700;font-size:14px;margin-bottom:2px}
+.dropdown-email{display:block;font-size:12px;color:var(--text-secondary)}
+.dropdown-divider{height:1px;background:var(--border)}
+.dropdown-item{display:block;width:100%;text-align:left;padding:12px 16px;font-size:12px;font-weight:600;letter-spacing:1px;color:var(--text);transition:var(--transition);border:none;background:none;cursor:pointer;font-family:var(--font-body)}
+.dropdown-item:hover{background:var(--highlight)}
+.dropdown-admin{color:var(--sold)}
+.dropdown-logout{color:var(--text-secondary)}
+
+/* ===== AUTH MODAL ===== */
+.auth-modal-content{position:relative;background:var(--surface);border-radius:var(--radius-xl);max-width:420px;width:92%;padding:40px 32px;z-index:1;animation:modalSlideIn 0.3s ease}
+@keyframes modalSlideIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.auth-tabs{display:flex;gap:0;margin-bottom:28px;border-bottom:2px solid var(--border)}
+.auth-tab{flex:1;padding:12px;font-size:12px;font-weight:700;letter-spacing:2px;color:var(--text-secondary);border-bottom:2px solid transparent;margin-bottom:-2px;transition:var(--transition)}
+.auth-tab.active{color:var(--text);border-bottom-color:var(--accent)}
+.auth-tab:hover{color:var(--text)}
+.auth-form{display:flex;flex-direction:column;gap:20px}
+.auth-form-group{display:flex;flex-direction:column;gap:6px}
+.auth-form-group label{font-size:11px;font-weight:600;letter-spacing:1.5px;color:var(--text-secondary);text-transform:uppercase}
+.auth-form-group input{padding:14px 16px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:14px;font-family:var(--font-body);transition:var(--transition);background:var(--bg)}
+.auth-form-group input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(12,16,20,0.08)}
+.auth-error{font-size:12px;color:var(--sold);min-height:16px}
+.auth-submit{width:100%;justify-content:center;margin-top:4px}
+
+/* ===== CART DRAWER ===== */
+.cart-drawer{position:fixed;inset:0;z-index:300;opacity:0;visibility:hidden;transition:var(--transition)}
+.cart-drawer.active{opacity:1;visibility:visible}
+.cart-drawer-backdrop{position:absolute;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px)}
+.cart-drawer-panel{position:absolute;top:0;right:0;width:400px;max-width:90vw;height:100%;background:var(--surface);display:flex;flex-direction:column;transform:translateX(100%);transition:transform 0.4s cubic-bezier(0.4,0,0.2,1);box-shadow:-8px 0 30px rgba(0,0,0,0.1)}
+.cart-drawer.active .cart-drawer-panel{transform:translateX(0)}
+.cart-drawer-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border)}
+.cart-drawer-header h3{font-family:var(--font-display);font-size:16px;font-weight:800;letter-spacing:3px}
+.cart-items{flex:1;overflow-y:auto;padding:16px 24px}
+.cart-item{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);align-items:center}
+.cart-item-img{width:64px;height:80px;border-radius:var(--radius);overflow:hidden;flex-shrink:0;background:var(--highlight)}
+.cart-item-img img{width:100%;height:100%;object-fit:cover}
+.cart-item-details{flex:1;display:flex;flex-direction:column;gap:2px}
+.cart-item-brand{font-size:9px;letter-spacing:2px;color:var(--text-secondary);font-weight:600}
+.cart-item-name{font-size:13px;font-weight:600;line-height:1.3}
+.cart-item-size{font-size:11px;color:var(--text-secondary)}
+.cart-item-price{font-family:var(--font-mono);font-size:14px;font-weight:700;margin-top:2px}
+.cart-item-remove{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);transition:var(--transition);flex-shrink:0}
+.cart-item-remove:hover{background:var(--highlight);color:var(--sold)}
+.cart-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--text-secondary);padding:40px}
+.cart-empty-icon{font-size:48px;opacity:0.3}
+.cart-empty p{font-size:15px;font-weight:600;color:var(--text)}
+.cart-empty span{font-size:12px}
+.cart-footer{padding:20px 24px;border-top:1px solid var(--border);background:var(--bg)}
+.cart-total-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.cart-total-row span:first-child{font-size:12px;font-weight:600;letter-spacing:2px;color:var(--text-secondary)}
+.cart-total{font-family:var(--font-mono);font-size:22px;font-weight:700}
+.cart-shipping-note{font-size:11px;color:var(--text-secondary);margin-bottom:16px}
+.cart-checkout-btn{width:100%;justify-content:center}
+
+@media(max-width:768px){
+  .cart-drawer-panel{width:100%;max-width:100%}
+  .auth-modal-content{padding:28px 20px}
+}

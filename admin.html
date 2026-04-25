@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel — Grail Plug Supply</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <div id="admin-app" style="display:none;">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-star">★</span>
+                    <span class="logo-text">GRAIL PLUG</span>
+                </div>
+                <span class="badge">ADMIN</span>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-view="dashboard">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                    Dashboard
+                </button>
+                <button class="nav-item" data-view="products">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+                    Products
+                </button>
+                <button class="nav-item" data-view="categories">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                    Categories
+                </button>
+                <button class="nav-item" data-view="orders">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                    Orders
+                </button>
+                <button class="nav-item" data-view="content">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                    Site Content
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="index.html" class="btn btn-outline" style="width:100%;justify-content:center;margin-bottom:12px;">VIEW STORE</a>
+                <button class="btn btn-outline" id="admin-logout" style="width:100%;justify-content:center;border-color:var(--border);">SIGN OUT</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="topbar">
+                <h1 class="page-title" id="page-title">Dashboard</h1>
+                <div class="topbar-user">
+                    <span id="topbar-name">Admin User</span>
+                    <div class="avatar" id="topbar-avatar">A</div>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <!-- VIEW: Dashboard -->
+                <div class="view-panel active" id="view-dashboard">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <span class="stat-label">TOTAL REVENUE</span>
+                            <div class="stat-value" id="dash-revenue">₹0</div>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">ITEMS SOLD</span>
+                            <div class="stat-value" id="dash-sold">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">AVAILABLE PIECES</span>
+                            <div class="stat-value" id="dash-available">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">TOTAL ORDERS</span>
+                            <div class="stat-value" id="dash-orders-count">0</div>
+                        </div>
+                    </div>
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3>Revenue (Last 7 Days)</h3>
+                            </div>
+                            <canvas id="revenueChart" width="600" height="300"></canvas>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3>Category Distribution</h3>
+                            </div>
+                            <canvas id="categoryChart" width="300" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW: Products -->
+                <div class="view-panel" id="view-products">
+                    <div class="panel-header">
+                        <div class="panel-actions">
+                            <input type="text" id="prod-search" placeholder="Search products..." class="form-control" style="width:250px">
+                            <select id="prod-filter" class="form-control" style="width:150px">
+                                <option value="all">All Status</option>
+                                <option value="available">Available</option>
+                                <option value="sold">Sold</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" id="btn-add-product">ADD NEW PRODUCT</button>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Image</th>
+                                    <th>Name</th>
+                                    <th>Brand</th>
+                                    <th>Category</th>
+                                    <th>Price</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="products-tbody">
+                                <!-- Filled by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- VIEW: Categories -->
+                <div class="view-panel" id="view-categories">
+                    <div class="panel-header">
+                        <h2>Manage Categories</h2>
+                        <button class="btn btn-primary" id="btn-add-category">ADD CATEGORY</button>
+                    </div>
+                    <div class="table-wrap" style="max-width:800px">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Icon</th>
+                                    <th>Name</th>
+                                    <th>ID</th>
+                                    <th>Products</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="categories-tbody">
+                                <!-- Filled by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- VIEW: Orders -->
+                <div class="view-panel" id="view-orders">
+                    <div class="panel-header">
+                        <h2>Recent Orders</h2>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Date</th>
+                                    <th>Customer</th>
+                                    <th>Items</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orders-tbody">
+                                <!-- Filled by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- VIEW: Site Content -->
+                <div class="view-panel" id="view-content">
+                    <div class="content-layout">
+                        <div class="content-sidebar">
+                            <button class="content-tab active" data-section="hero">Hero Section</button>
+                            <button class="content-tab" data-section="announcements">Announcement Bar</button>
+                            <button class="content-tab" data-section="about">About Section</button>
+                            <button class="content-tab" data-section="contact">Contact Details</button>
+                        </div>
+                        <div class="content-editor" id="content-editor">
+                            <!-- Filled dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Product Modal -->
+    <div class="modal" id="admin-product-modal">
+        <div class="modal-backdrop" onclick="document.getElementById('admin-product-modal').classList.remove('active')"></div>
+        <div class="modal-content" style="max-width:600px;padding:32px">
+            <h2 id="ap-modal-title" style="margin-bottom:24px;font-family:var(--font-display);">Add Product</h2>
+            <form id="ap-form">
+                <input type="hidden" id="ap-id">
+                <div class="form-grid">
+                    <div class="form-group" style="grid-column:1/-1">
+                        <label>Product Name</label>
+                        <input type="text" id="ap-name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Brand</label>
+                        <input type="text" id="ap-brand" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="ap-category" class="form-control" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Price (₹)</label>
+                        <input type="number" id="ap-price" class="form-control" required min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="ap-status" class="form-control" required>
+                            <option value="available">Available</option>
+                            <option value="sold">Sold</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Size ID</label>
+                        <input type="text" id="ap-size" class="form-control" required placeholder="e.g. M, 32">
+                    </div>
+                    <div class="form-group">
+                        <label>Size Label</label>
+                        <input type="text" id="ap-sizeLabel" class="form-control" required placeholder="e.g. Chest 38">
+                    </div>
+                    <div class="form-group" style="grid-column:1/-1">
+                        <label>Image URL or Base64</label>
+                        <input type="text" id="ap-image" class="form-control" required placeholder="images/...">
+                        <small style="color:var(--text-secondary);display:block;margin-top:4px">For demo, using local images/ paths or base64 data URLs.</small>
+                    </div>
+                    <div class="form-group" style="grid-column:1/-1">
+                        <label>Description</label>
+                        <textarea id="ap-desc" class="form-control" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:32px">
+                    <button type="button" class="btn btn-outline" onclick="document.getElementById('admin-product-modal').classList.remove('active')" style="color:var(--text);border-color:var(--border)">CANCEL</button>
+                    <button type="submit" class="btn btn-primary">SAVE PRODUCT</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Full Page Block (if not logged in) -->
+    <div id="auth-block" style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0C1014;color:#FFF;text-align:center;flex-direction:column;gap:16px;">
+        <h1 style="font-family:var(--font-display);font-weight:900;letter-spacing:2px">ACCESS DENIED</h1>
+        <p style="color:rgba(255,255,255,0.7)">You must be logged in as an administrator to view this page.</p>
+        <a href="index.html" class="btn btn-primary" style="background:#FFF;color:#0C1014">RETURN TO STORE</a>
+    </div>
+
+    <script src="products.js"></script>
+    <script src="auth.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>

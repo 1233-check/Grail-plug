@@ -1,5 +1,7 @@
-// Product data — 1 of 1 pieces, organized by size
-const PRODUCTS = [
+// ===== GRAIL DATA LAYER =====
+// All data stored in localStorage. Seeds defaults on first load.
+
+const DEFAULT_PRODUCTS = [
   {
     id:1, name:"FreeSoul Waxed Jacket", brand:"FREESOUL", category:"jackets",
     size:"M", sizeLabel:"Chest 36/38", price:4199, status:"sold",
@@ -85,3 +87,190 @@ const PRODUCTS = [
     desc:"Hugo Boss dark wash bootcut. Heavier weight denim with subtle fading."
   }
 ];
+
+const DEFAULT_CATEGORIES = [
+  { id: 'denim', name: 'Denim', icon: '👖' },
+  { id: 'jackets', name: 'Jackets', icon: '🧥' },
+  { id: 'pants', name: 'Pants', icon: '👔' },
+  { id: 'tops', name: 'Tops', icon: '👕' },
+  { id: 'accessories', name: 'Accessories', icon: '👜' }
+];
+
+const DEFAULT_SITE_CONTENT = {
+  announcements: [
+    "★ 1 OF 1 PIECES ONLY",
+    "★ SHIPS WORLDWIDE 🌍",
+    "★ DM TO COP",
+    "★ CURATED ARCHIVE GRAILS",
+    "★ SERIOUS BUYERS ONLY"
+  ],
+  hero: {
+    badge: "EST. 2022",
+    line1: "CURATED",
+    line2: "VINTAGE &",
+    line3: "ARCHIVE GRAILS",
+    subtitle: "Every piece is 1 of 1. When it's gone, it's gone.",
+    stat1Number: "105+", stat1Label: "Pieces Curated",
+    stat2Number: "2.6K+", stat2Label: "Community",
+    stat3Number: "🌍", stat3Label: "Ships Worldwide"
+  },
+  about: {
+    tag: "THE STORY",
+    title: "ONLY FOR HIGHLY<br>EDUCATED FASHION<br>PEOPLE",
+    text1: "Grail Plug Supply is a curated archive fashion destination. We source dead-stock, vintage, and rare 1-of-1 pieces from brands like Hugo Boss Germany, FreeSoul, Armani, and more.",
+    text2: "Every single piece in our collection is unique — one size, one piece, one chance. When it sells, it's gone forever. No restocks. No replicas. Just pure, authenticated archive fashion.",
+    values: [
+      { title: "Authenticated", desc: "Every piece verified before listing" },
+      { title: "1 of 1", desc: "No two pieces are the same" },
+      { title: "Worldwide Shipping", desc: "We ship to every corner of the globe" }
+    ]
+  },
+  reviews: [
+    "\"Absolutely perfect piece, loved it\" ★★★★★",
+    "\"Got the drippp! 🔥\" ★★★★★",
+    "\"Legit seller, fast shipping\" ★★★★★",
+    "\"Quality is insane for the price\" ★★★★★",
+    "\"Best archive plug in India\" ★★★★★"
+  ],
+  contact: {
+    tag: "DM TO COP",
+    title: "WANT A PIECE?",
+    desc: "All purchases happen via Instagram DM. Tap below to start a conversation.",
+    igHandle: "@grail_plug.co",
+    igUrl: "https://www.instagram.com/grail_plug.co/"
+  },
+  footer: {
+    tagline: "Curated Vintage & Archive Grails<br>Dead Grails Mostly.",
+    copyright: "© 2026 Grail Plug Supply. All rights reserved.",
+    bottomText: "Only for Highly Educated Fashion People."
+  },
+  drops: {
+    tag: "NEW DROP",
+    title: "LATEST DROP",
+    desc: "Fresh pieces just landed. Pre-booking available."
+  },
+  collection: {
+    tag: "1 OF 1",
+    title: "SHOP BY YOUR SIZE",
+    desc: "Every piece is unique. Find what fits you."
+  }
+};
+
+// ===== GrailData API =====
+const GrailData = {
+  init() {
+    if (!localStorage.getItem('grail_products')) {
+      localStorage.setItem('grail_products', JSON.stringify(DEFAULT_PRODUCTS));
+    }
+    if (!localStorage.getItem('grail_categories')) {
+      localStorage.setItem('grail_categories', JSON.stringify(DEFAULT_CATEGORIES));
+    }
+    if (!localStorage.getItem('grail_site_content')) {
+      localStorage.setItem('grail_site_content', JSON.stringify(DEFAULT_SITE_CONTENT));
+    }
+    if (!localStorage.getItem('grail_orders')) {
+      localStorage.setItem('grail_orders', JSON.stringify([]));
+    }
+  },
+
+  // --- Products ---
+  getProducts() {
+    return JSON.parse(localStorage.getItem('grail_products') || '[]');
+  },
+  saveProducts(products) {
+    localStorage.setItem('grail_products', JSON.stringify(products));
+  },
+  getProductById(id) {
+    return this.getProducts().find(p => p.id === id);
+  },
+  addProduct(product) {
+    const products = this.getProducts();
+    product.id = products.length ? Math.max(...products.map(p => p.id)) + 1 : 1;
+    products.push(product);
+    this.saveProducts(products);
+    return product;
+  },
+  updateProduct(id, updates) {
+    const products = this.getProducts();
+    const idx = products.findIndex(p => p.id === id);
+    if (idx !== -1) { products[idx] = { ...products[idx], ...updates }; this.saveProducts(products); }
+    return products[idx];
+  },
+  deleteProduct(id) {
+    const products = this.getProducts().filter(p => p.id !== id);
+    this.saveProducts(products);
+  },
+
+  // --- Categories ---
+  getCategories() {
+    return JSON.parse(localStorage.getItem('grail_categories') || '[]');
+  },
+  saveCategories(cats) {
+    localStorage.setItem('grail_categories', JSON.stringify(cats));
+  },
+  addCategory(cat) {
+    const cats = this.getCategories();
+    cat.id = cat.name.toLowerCase().replace(/\s+/g, '-');
+    cats.push(cat);
+    this.saveCategories(cats);
+    return cat;
+  },
+  updateCategory(id, updates) {
+    const cats = this.getCategories();
+    const idx = cats.findIndex(c => c.id === id);
+    if (idx !== -1) { cats[idx] = { ...cats[idx], ...updates }; this.saveCategories(cats); }
+  },
+  deleteCategory(id) {
+    this.saveCategories(this.getCategories().filter(c => c.id !== id));
+  },
+
+  // --- Site Content ---
+  getSiteContent() {
+    return JSON.parse(localStorage.getItem('grail_site_content') || '{}');
+  },
+  saveSiteContent(content) {
+    localStorage.setItem('grail_site_content', JSON.stringify(content));
+  },
+  updateSiteSection(section, data) {
+    const content = this.getSiteContent();
+    content[section] = { ...content[section], ...data };
+    this.saveSiteContent(content);
+  },
+
+  // --- Orders ---
+  getOrders() {
+    return JSON.parse(localStorage.getItem('grail_orders') || '[]');
+  },
+  saveOrders(orders) {
+    localStorage.setItem('grail_orders', JSON.stringify(orders));
+  },
+  addOrder(order) {
+    const orders = this.getOrders();
+    order.id = orders.length ? Math.max(...orders.map(o => o.id)) + 1 : 1;
+    order.date = new Date().toISOString();
+    order.status = 'pending';
+    orders.unshift(order);
+    this.saveOrders(orders);
+    return order;
+  },
+  updateOrderStatus(id, status) {
+    const orders = this.getOrders();
+    const idx = orders.findIndex(o => o.id === id);
+    if (idx !== -1) { orders[idx].status = status; this.saveOrders(orders); }
+  },
+
+  // --- Reset to defaults ---
+  resetAll() {
+    localStorage.removeItem('grail_products');
+    localStorage.removeItem('grail_categories');
+    localStorage.removeItem('grail_site_content');
+    localStorage.removeItem('grail_orders');
+    this.init();
+  }
+};
+
+// Initialize on load
+GrailData.init();
+
+// Backward compat: expose PRODUCTS for existing app.js references
+const PRODUCTS = GrailData.getProducts();

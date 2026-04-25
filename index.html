@@ -24,7 +24,7 @@
 
     <!-- Announcement Bar -->
     <div class="announcement-bar">
-        <div class="announcement-track">
+        <div class="announcement-track" id="announcement-track">
             <span>★ 1 OF 1 PIECES ONLY</span>
             <span>★ SHIPS WORLDWIDE 🌍</span>
             <span>★ DM TO COP</span>
@@ -52,6 +52,22 @@
                 <a href="#contact" class="nav-link">CONTACT</a>
             </nav>
             <div class="header-actions">
+                <!-- User Icon -->
+                <div class="user-menu-wrap" id="user-menu-wrap">
+                    <button class="header-icon-btn" id="user-icon-btn" aria-label="Account">
+                        <svg id="user-icon-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <span class="user-avatar" id="user-avatar" style="display:none;"></span>
+                    </button>
+                    <div class="user-dropdown" id="user-dropdown">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+                <!-- Cart Icon -->
+                <button class="header-icon-btn cart-icon-btn" id="cart-icon-btn" aria-label="Cart" onclick="GrailCart.openDrawer()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                    <span class="cart-badge" id="cart-badge" style="display:none;">0</span>
+                </button>
+                <!-- Instagram -->
                 <a href="https://www.instagram.com/grail_plug.co/" target="_blank" class="header-ig" id="header-instagram">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="m16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
                 </a>
@@ -85,29 +101,29 @@
                 <div class="hero-overlay"></div>
             </div>
             <div class="hero-content">
-                <div class="hero-badge">EST. 2022</div>
+                <div class="hero-badge" id="hero-badge">EST. 2022</div>
                 <h1 class="hero-title">
-                    <span class="hero-line">CURATED</span>
-                    <span class="hero-line hero-line-accent">VINTAGE &</span>
-                    <span class="hero-line">ARCHIVE GRAILS</span>
+                    <span class="hero-line" id="hero-line1">CURATED</span>
+                    <span class="hero-line hero-line-accent" id="hero-line2">VINTAGE &</span>
+                    <span class="hero-line" id="hero-line3">ARCHIVE GRAILS</span>
                 </h1>
-                <p class="hero-subtitle">Every piece is 1 of 1. When it's gone, it's gone.</p>
+                <p class="hero-subtitle" id="hero-subtitle">Every piece is 1 of 1. When it's gone, it's gone.</p>
                 <div class="hero-actions">
                     <a href="#collection" class="btn btn-primary" id="hero-shop-btn">SHOP COLLECTION</a>
                     <a href="#drops" class="btn btn-outline" id="hero-drops-btn">LATEST DROP</a>
                 </div>
                 <div class="hero-stats">
                     <div class="hero-stat">
-                        <span class="hero-stat-number">105+</span>
-                        <span class="hero-stat-label">Pieces Curated</span>
+                        <span class="hero-stat-number" id="stat1-number">105+</span>
+                        <span class="hero-stat-label" id="stat1-label">Pieces Curated</span>
                     </div>
                     <div class="hero-stat">
-                        <span class="hero-stat-number">2.6K+</span>
-                        <span class="hero-stat-label">Community</span>
+                        <span class="hero-stat-number" id="stat2-number">2.6K+</span>
+                        <span class="hero-stat-label" id="stat2-label">Community</span>
                     </div>
                     <div class="hero-stat">
-                        <span class="hero-stat-number">🌍</span>
-                        <span class="hero-stat-label">Ships Worldwide</span>
+                        <span class="hero-stat-number" id="stat3-number">🌍</span>
+                        <span class="hero-stat-label" id="stat3-label">Ships Worldwide</span>
                     </div>
                 </div>
             </div>
@@ -121,9 +137,9 @@
         <section id="drops" class="section drops-section">
             <div class="container">
                 <div class="section-header">
-                    <span class="section-tag">NEW DROP</span>
-                    <h2 class="section-title">LATEST DROP</h2>
-                    <p class="section-desc">Fresh pieces just landed. Pre-booking available.</p>
+                    <span class="section-tag" id="drops-tag">NEW DROP</span>
+                    <h2 class="section-title" id="drops-title">LATEST DROP</h2>
+                    <p class="section-desc" id="drops-desc">Fresh pieces just landed. Pre-booking available.</p>
                 </div>
                 <div class="drops-grid" id="drops-grid">
                     <!-- Filled by JS -->
@@ -135,9 +151,9 @@
         <section id="collection" class="section collection-section">
             <div class="container">
                 <div class="section-header">
-                    <span class="section-tag">1 OF 1</span>
-                    <h2 class="section-title">SHOP BY YOUR SIZE</h2>
-                    <p class="section-desc">Every piece is unique. Find what fits you.</p>
+                    <span class="section-tag" id="collection-tag">1 OF 1</span>
+                    <h2 class="section-title" id="collection-title">SHOP BY YOUR SIZE</h2>
+                    <p class="section-desc" id="collection-desc">Every piece is unique. Find what fits you.</p>
                 </div>
 
                 <!-- Size Filter Bar -->
@@ -158,11 +174,7 @@
                 <!-- Category Tabs -->
                 <div class="category-tabs" id="category-tabs">
                     <button class="cat-tab active" data-category="all" id="cat-all">ALL</button>
-                    <button class="cat-tab" data-category="denim" id="cat-denim">DENIM</button>
-                    <button class="cat-tab" data-category="jackets" id="cat-jackets">JACKETS</button>
-                    <button class="cat-tab" data-category="pants" id="cat-pants">PANTS</button>
-                    <button class="cat-tab" data-category="tops" id="cat-tops">TOPS</button>
-                    <button class="cat-tab" data-category="accessories" id="cat-accessories">ACCESSORIES</button>
+                    <!-- Dynamic categories filled by JS -->
                 </div>
 
                 <!-- Product Grid -->
@@ -183,15 +195,15 @@
             <div class="container">
                 <div class="about-grid">
                     <div class="about-content">
-                        <span class="section-tag">THE STORY</span>
-                        <h2 class="section-title">ONLY FOR HIGHLY<br>EDUCATED FASHION<br>PEOPLE</h2>
-                        <p class="about-text">
+                        <span class="section-tag" id="about-tag">THE STORY</span>
+                        <h2 class="section-title" id="about-title">ONLY FOR HIGHLY<br>EDUCATED FASHION<br>PEOPLE</h2>
+                        <p class="about-text" id="about-text1">
                             Grail Plug Supply is a curated archive fashion destination. We source dead-stock, vintage, and rare 1-of-1 pieces from brands like Hugo Boss Germany, FreeSoul, Armani, and more.
                         </p>
-                        <p class="about-text">
+                        <p class="about-text" id="about-text2">
                             Every single piece in our collection is unique — one size, one piece, one chance. When it sells, it's gone forever. No restocks. No replicas. Just pure, authenticated archive fashion.
                         </p>
-                        <div class="about-values">
+                        <div class="about-values" id="about-values">
                             <div class="value">
                                 <span class="value-icon">◆</span>
                                 <div>
@@ -227,7 +239,7 @@
 
         <!-- Reviews Marquee -->
         <div class="reviews-marquee">
-            <div class="reviews-track">
+            <div class="reviews-track" id="reviews-track">
                 <span class="review-item">"Absolutely perfect piece, loved it" ★★★★★</span>
                 <span class="review-item">"Got the drippp! 🔥" ★★★★★</span>
                 <span class="review-item">"Legit seller, fast shipping" ★★★★★</span>
@@ -245,9 +257,9 @@
         <section id="contact" class="section contact-section">
             <div class="container">
                 <div class="contact-card">
-                    <span class="section-tag">DM TO COP</span>
-                    <h2 class="contact-title">WANT A PIECE?</h2>
-                    <p class="contact-desc">All purchases happen via Instagram DM. Tap below to start a conversation.</p>
+                    <span class="section-tag" id="contact-tag">DM TO COP</span>
+                    <h2 class="contact-title" id="contact-title">WANT A PIECE?</h2>
+                    <p class="contact-desc" id="contact-desc">All purchases happen via Instagram DM. Tap below to start a conversation.</p>
                     <div class="contact-buttons">
                         <a href="https://www.instagram.com/grail_plug.co/" target="_blank" class="btn btn-primary btn-lg" id="contact-dm-btn">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="m16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
@@ -255,7 +267,7 @@
                         </a>
                     </div>
                     <div class="contact-info">
-                        <span>@grail_plug.co</span>
+                        <span id="contact-handle">@grail_plug.co</span>
                         <span class="dot">·</span>
                         <span>Serious buyers only</span>
                         <span class="dot">·</span>
@@ -272,7 +284,7 @@
             <div class="footer-inner">
                 <div class="footer-brand">
                     <span class="footer-logo"><span class="logo-star">★</span> GRAIL PLUG SUPPLY</span>
-                    <p class="footer-tagline">Curated Vintage & Archive Grails<br>Dead Grails Mostly.</p>
+                    <p class="footer-tagline" id="footer-tagline">Curated Vintage & Archive Grails<br>Dead Grails Mostly.</p>
                 </div>
                 <div class="footer-links">
                     <div class="footer-col">
@@ -292,8 +304,8 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <span>© 2026 Grail Plug Supply. All rights reserved.</span>
-                <span>Only for Highly Educated Fashion People.</span>
+                <span id="footer-copyright">© 2026 Grail Plug Supply. All rights reserved.</span>
+                <span id="footer-bottom-text">Only for Highly Educated Fashion People.</span>
             </div>
         </div>
     </footer>
@@ -314,7 +326,78 @@
         </div>
     </div>
 
+    <!-- Auth Modal -->
+    <div class="modal" id="auth-modal">
+        <div class="modal-backdrop" id="auth-backdrop"></div>
+        <div class="auth-modal-content">
+            <button class="modal-close" id="auth-close">✕</button>
+            <div class="auth-tabs">
+                <button class="auth-tab active" data-tab="login" id="auth-tab-login">SIGN IN</button>
+                <button class="auth-tab" data-tab="register" id="auth-tab-register">REGISTER</button>
+            </div>
+            <!-- Login Form -->
+            <form class="auth-form" id="login-form">
+                <div class="auth-form-group">
+                    <label for="login-email">Email or Username</label>
+                    <input type="text" id="login-email" placeholder="Enter your email" required>
+                </div>
+                <div class="auth-form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" placeholder="Enter your password" required>
+                </div>
+                <div class="auth-error" id="login-error"></div>
+                <button type="submit" class="btn btn-primary auth-submit">SIGN IN</button>
+            </form>
+            <!-- Register Form -->
+            <form class="auth-form" id="register-form" style="display:none;">
+                <div class="auth-form-group">
+                    <label for="register-name">Full Name</label>
+                    <input type="text" id="register-name" placeholder="Your name" required>
+                </div>
+                <div class="auth-form-group">
+                    <label for="register-email">Email</label>
+                    <input type="email" id="register-email" placeholder="your@email.com" required>
+                </div>
+                <div class="auth-form-group">
+                    <label for="register-password">Password</label>
+                    <input type="password" id="register-password" placeholder="Min 4 characters" required minlength="4">
+                </div>
+                <div class="auth-error" id="register-error"></div>
+                <button type="submit" class="btn btn-primary auth-submit">CREATE ACCOUNT</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Cart Drawer -->
+    <div class="cart-drawer" id="cart-drawer">
+        <div class="cart-drawer-backdrop" onclick="GrailCart.closeDrawer()"></div>
+        <div class="cart-drawer-panel">
+            <div class="cart-drawer-header">
+                <h3>YOUR CART</h3>
+                <button class="modal-close" onclick="GrailCart.closeDrawer()">✕</button>
+            </div>
+            <div class="cart-items" id="cart-items">
+                <!-- Filled by JS -->
+            </div>
+            <div class="cart-empty" id="cart-empty">
+                <div class="cart-empty-icon">🛒</div>
+                <p>Your cart is empty</p>
+                <span>Browse our collection and add some grails.</span>
+            </div>
+            <div class="cart-footer" id="cart-footer" style="display:none;">
+                <div class="cart-total-row">
+                    <span>SUBTOTAL</span>
+                    <span class="cart-total" id="cart-total">₹0</span>
+                </div>
+                <p class="cart-shipping-note">Shipping calculated after checkout</p>
+                <button class="btn btn-primary cart-checkout-btn" onclick="GrailCart.checkout()">CHECKOUT VIA DM</button>
+            </div>
+        </div>
+    </div>
+
     <script src="products.js"></script>
+    <script src="auth.js"></script>
+    <script src="cart.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
