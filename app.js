@@ -1,5 +1,5 @@
-// ===== APP.JS — Grail Plug Supply =====
-document.addEventListener('DOMContentLoaded', () => {
+// ===== APP.JS — Grail Plug Supply (Supabase Backend) =====
+document.addEventListener('DOMContentLoaded', async () => {
   // --- Loader ---
   const loader = document.getElementById('loader');
   setTimeout(() => loader.classList.add('hidden'), 1500);
@@ -23,12 +23,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- State ---
   let activeSize = 'all';
   let activeCategory = 'all';
+  let allProducts = [];
 
-  // --- Apply Site Content from localStorage ---
-  function applySiteContent() {
-    const content = GrailData.getSiteContent();
+  // --- Apply Site Content from Supabase ---
+  async function applySiteContent() {
+    const content = await GrailData.getSiteContent();
 
-    // Hero
     if (content.hero) {
       const h = content.hero;
       const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.textContent = val; };
@@ -45,7 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
       set('stat3-label', h.stat3Label);
     }
 
-    // Drops
     if (content.drops) {
       const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.textContent = val; };
       set('drops-tag', content.drops.tag);
@@ -53,7 +52,6 @@ document.addEventListener('DOMContentLoaded', () => {
       set('drops-desc', content.drops.desc);
     }
 
-    // Collection
     if (content.collection) {
       const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.textContent = val; };
       set('collection-tag', content.collection.tag);
@@ -61,17 +59,15 @@ document.addEventListener('DOMContentLoaded', () => {
       set('collection-desc', content.collection.desc);
     }
 
-    // About
     if (content.about) {
       const a = content.about;
-      const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.innerHTML = val; };
       if (a.tag) { const el = document.getElementById('about-tag'); if (el) el.textContent = a.tag; }
-      set('about-title', a.title);
-      set('about-text1', a.text1);
-      set('about-text2', a.text2);
+      const setH = (id, val) => { const el = document.getElementById(id); if (el && val) el.innerHTML = val; };
+      setH('about-title', a.title);
+      setH('about-text1', a.text1);
+      setH('about-text2', a.text2);
     }
 
-    // Contact
     if (content.contact) {
       const c = content.contact;
       const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.textContent = val; };
@@ -79,37 +75,32 @@ document.addEventListener('DOMContentLoaded', () => {
       set('contact-title', c.title);
       set('contact-desc', c.desc);
       set('contact-handle', c.igHandle);
-      if (c.igUrl) {
-        const btn = document.getElementById('contact-dm-btn');
-        if (btn) btn.href = c.igUrl;
-      }
+      if (c.igUrl) { const btn = document.getElementById('contact-dm-btn'); if (btn) btn.href = c.igUrl; }
     }
 
-    // Footer
     if (content.footer) {
       const f = content.footer;
-      const setHtml = (id, val) => { const el = document.getElementById(id); if (el && val) el.innerHTML = val; };
-      setHtml('footer-tagline', f.tagline);
+      const setH = (id, val) => { const el = document.getElementById(id); if (el && val) el.innerHTML = val; };
+      setH('footer-tagline', f.tagline);
       const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.textContent = val; };
       set('footer-copyright', f.copyright);
       set('footer-bottom-text', f.bottomText);
     }
 
-    // Reviews
     if (content.reviews && content.reviews.length) {
       const track = document.getElementById('reviews-track');
       if (track) {
         const items = content.reviews.map(r => `<span class="review-item">${r}</span>`).join('');
-        track.innerHTML = items + items; // duplicate for seamless marquee
+        track.innerHTML = items + items;
       }
     }
   }
 
   // --- Build Category Tabs Dynamically ---
-  function buildCategoryTabs() {
+  async function buildCategoryTabs() {
     const container = document.getElementById('category-tabs');
     if (!container) return;
-    const cats = GrailData.getCategories();
+    const cats = await GrailData.getCategories();
     container.innerHTML = '<button class="cat-tab active" data-category="all" id="cat-all">ALL</button>' +
       cats.map(c => `<button class="cat-tab" data-category="${c.id}" id="cat-${c.id}">${c.name.toUpperCase()}</button>`).join('');
 
@@ -145,10 +136,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // --- Render Grids ---
+  async function loadProducts() {
+    allProducts = await GrailData.getProducts();
+  }
+
   function renderDrops() {
     const grid = document.getElementById('drops-grid');
-    const products = GrailData.getProducts();
-    const drops = products.filter(p => p.status === 'available').slice(0, 4);
+    const drops = allProducts.filter(p => p.status === 'available').slice(0, 4);
     grid.innerHTML = drops.map(createCard).join('');
     observeFadeIns(grid);
     attachCardClicks(grid);
@@ -157,8 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderCollection() {
     const grid = document.getElementById('product-grid');
     const empty = document.getElementById('grid-empty');
-    const products = GrailData.getProducts();
-    let filtered = products;
+    let filtered = allProducts;
     if (activeSize !== 'all') filtered = filtered.filter(p => p.size === activeSize);
     if (activeCategory !== 'all') filtered = filtered.filter(p => p.category === activeCategory);
     if (filtered.length === 0) {
@@ -193,12 +186,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const isSold = product.status === 'sold';
     modalImg.src = product.image;
     modalImg.alt = product.name;
-    const measHtml = Object.entries(product.measurements).map(
+    const measHtml = Object.entries(product.measurements || {}).map(
       ([k, v]) => `<div class="measurement"><span>${k}</span><span>${v}</span></div>`
     ).join('');
 
-    // Check if already in cart
     const inCart = GrailCart.getItems().find(i => i.id === product.id);
+    const igUrl = 'https://www.instagram.com/grail_plug.co/';
 
     modalInfo.innerHTML = `
       <div class="modal-brand">${product.brand}</div>
@@ -209,10 +202,10 @@ document.addEventListener('DOMContentLoaded', () => {
         <h4>MEASUREMENTS</h4>
         <div class="measurement-grid">${measHtml}</div>
       </div>
-      <p class="modal-note">${product.desc}</p>
+      <p class="modal-note">${product.desc || ''}</p>
       ${!isSold ? `
         <div class="modal-cta" style="display:flex;flex-direction:column;gap:12px;">
-          <a href="${GrailData.getSiteContent().contact?.igUrl || 'https://www.instagram.com/grail_plug.co/'}" target="_blank" class="btn btn-outline btn-lg" style="width:100%;justify-content:center;color:var(--accent);border-color:var(--border);">
+          <a href="${igUrl}" target="_blank" class="btn btn-outline btn-lg" style="width:100%;justify-content:center;color:var(--accent);border-color:var(--border);">
             DM TO COP
           </a>
           <div style="display:flex;gap:12px;">
@@ -228,16 +221,14 @@ document.addEventListener('DOMContentLoaded', () => {
       <p class="modal-note" style="margin-top:12px">Serious buyers only. Feel free to authenticate the piece before purchasing. DM for any questions or additional photos.</p>
     `;
 
-    // Wire add-to-cart
     const addBtn = modalInfo.querySelector('.modal-add-cart');
     if (addBtn && !inCart) {
       addBtn.addEventListener('click', () => {
         const added = GrailCart.addItem(product);
         if (added) {
-          addBtn.innerHTML = `ADDED`;
+          addBtn.innerHTML = 'ADDED';
           addBtn.disabled = true;
           addBtn.style.opacity = '0.5';
-          // Brief animation
           addBtn.style.background = '#2E7D32';
           addBtn.style.color = '#FFF';
           setTimeout(() => { addBtn.style.background = ''; addBtn.style.color = 'var(--accent)'; }, 1500);
@@ -245,7 +236,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Wire buy-now
     const buyBtn = modalInfo.querySelector('.modal-buy-now');
     if (buyBtn) {
       buyBtn.addEventListener('click', () => {
@@ -270,8 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function attachCardClicks(container) {
     container.querySelectorAll('.product-card').forEach(card => {
       card.addEventListener('click', () => {
-        const products = GrailData.getProducts();
-        const product = products.find(p => p.id === parseInt(card.dataset.id));
+        const product = allProducts.find(p => p.id === parseInt(card.dataset.id));
         if (product) openModal(product);
       });
     });
@@ -290,7 +279,6 @@ document.addEventListener('DOMContentLoaded', () => {
     container.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
   }
 
-  // --- General fade-in for sections ---
   const sectionObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -305,13 +293,11 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // --- Header scroll effect ---
-  let lastScroll = 0;
   window.addEventListener('scroll', () => {
     const header = document.getElementById('header');
     const scroll = window.scrollY;
     if (scroll > 100) header.style.borderBottomColor = 'var(--border)';
     else header.style.borderBottomColor = 'transparent';
-    lastScroll = scroll;
   });
 
   // ===== AUTH UI =====
@@ -323,92 +309,59 @@ document.addEventListener('DOMContentLoaded', () => {
   const loginError = document.getElementById('login-error');
   const registerError = document.getElementById('register-error');
 
-  function openAuthModal() {
-    authModal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-  }
-  function closeAuthModal() {
-    authModal.classList.remove('active');
-    document.body.style.overflow = '';
-    loginError.textContent = '';
-    registerError.textContent = '';
-  }
+  function openAuthModal() { authModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+  function closeAuthModal() { authModal.classList.remove('active'); document.body.style.overflow = ''; loginError.textContent = ''; registerError.textContent = ''; }
   authClose.addEventListener('click', closeAuthModal);
   authBackdrop.addEventListener('click', closeAuthModal);
 
-  // Auth tabs
   document.querySelectorAll('.auth-tab').forEach(tab => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
-      if (tab.dataset.tab === 'login') {
-        loginForm.style.display = 'flex';
-        registerForm.style.display = 'none';
-      } else {
-        loginForm.style.display = 'none';
-        registerForm.style.display = 'flex';
-      }
+      if (tab.dataset.tab === 'login') { loginForm.style.display = 'flex'; registerForm.style.display = 'none'; }
+      else { loginForm.style.display = 'none'; registerForm.style.display = 'flex'; }
     });
   });
 
-  // Login
-  loginForm.addEventListener('submit', (e) => {
+  loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
-    const result = GrailAuth.login(email, password);
-    if (result.success) {
-      closeAuthModal();
-      updateUserUI();
-      loginForm.reset();
-    } else {
-      loginError.textContent = result.error;
-    }
+    const result = await GrailAuth.login(email, password);
+    if (result.success) { closeAuthModal(); await updateUserUI(); loginForm.reset(); }
+    else { loginError.textContent = result.error; }
   });
 
-  // Register
-  registerForm.addEventListener('submit', (e) => {
+  registerForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = document.getElementById('register-name').value;
     const email = document.getElementById('register-email').value;
     const password = document.getElementById('register-password').value;
-    const result = GrailAuth.register(name, email, password);
-    if (result.success) {
-      closeAuthModal();
-      updateUserUI();
-      registerForm.reset();
-    } else {
-      registerError.textContent = result.error;
-    }
+    const result = await GrailAuth.register(name, email, password);
+    if (result.success) { closeAuthModal(); await updateUserUI(); registerForm.reset(); }
+    else { registerError.textContent = result.error; }
   });
 
-  // User icon & dropdown
   const userIconBtn = document.getElementById('user-icon-btn');
   const userIconSvg = document.getElementById('user-icon-svg');
   const userAvatar = document.getElementById('user-avatar');
   const userDropdown = document.getElementById('user-dropdown');
 
-  userIconBtn.addEventListener('click', (e) => {
+  userIconBtn.addEventListener('click', async (e) => {
     e.stopPropagation();
-    if (!GrailAuth.isLoggedIn()) {
-      openAuthModal();
-    } else {
-      userDropdown.classList.toggle('active');
-    }
+    const loggedIn = await GrailAuth.isLoggedIn();
+    if (!loggedIn) { openAuthModal(); }
+    else { userDropdown.classList.toggle('active'); }
   });
 
-  // Close dropdown on outside click
-  document.addEventListener('click', () => {
-    userDropdown.classList.remove('active');
-  });
+  document.addEventListener('click', () => { userDropdown.classList.remove('active'); });
 
-  function updateUserUI() {
-    const user = GrailAuth.getCurrentUser();
+  async function updateUserUI() {
+    const user = await GrailAuth.getCurrentUser();
     if (user) {
       userIconSvg.style.display = 'none';
       userAvatar.style.display = 'flex';
-      userAvatar.textContent = GrailAuth.getUserInitial();
-      // Build dropdown
+      userAvatar.textContent = user.name.charAt(0).toUpperCase();
       let adminLink = '';
       if (user.role === 'admin') {
         adminLink = '<a href="admin.html" class="dropdown-item dropdown-admin">★ ADMIN PANEL</a>';
@@ -422,9 +375,9 @@ document.addEventListener('DOMContentLoaded', () => {
         ${adminLink}
         <button class="dropdown-item dropdown-logout" id="logout-btn">SIGN OUT</button>
       `;
-      document.getElementById('logout-btn').addEventListener('click', () => {
-        GrailAuth.logout();
-        updateUserUI();
+      document.getElementById('logout-btn').addEventListener('click', async () => {
+        await GrailAuth.logout();
+        await updateUserUI();
         userDropdown.classList.remove('active');
       });
     } else {
@@ -435,10 +388,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // --- Init ---
-  applySiteContent();
-  buildCategoryTabs();
+  await applySiteContent();
+  await buildCategoryTabs();
+  await loadProducts();
   renderDrops();
   renderCollection();
-  updateUserUI();
+  await updateUserUI();
   GrailCart.init();
 });

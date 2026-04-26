@@ -101,3 +101,29 @@ canvas{width:100%!important;max-width:100%}
 @media(max-width:1024px){
   .charts-grid{grid-template-columns:1fr}
 }
+@media(max-width:768px){
+  #admin-app{flex-direction:column}
+  .sidebar{width:100%;flex-direction:row;align-items:center;padding:12px 20px;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.1)}
+  .sidebar-header{padding:0;border:none}
+  .sidebar-nav{flex-direction:row;padding:0;gap:8px;overflow-x:auto;width:100%;align-items:center}
+  .sidebar-nav::-webkit-scrollbar{display:none}
+  .nav-item{padding:8px 12px;width:auto;white-space:nowrap;min-height:44px}
+  .sidebar-footer{display:none}
+  .topbar{padding:0 20px}
+  .content-area{padding:20px}
+  .stats-grid{grid-template-columns:1fr 1fr;gap:16px}
+  .content-layout{flex-direction:column;min-height:auto}
+  .content-sidebar{width:100%;flex-direction:row;overflow-x:auto;border-right:none;border-bottom:1px solid var(--border)}
+  .content-tab{white-space:nowrap;border-bottom:none;border-left:none;padding:12px;min-height:44px}
+  .content-tab.active{border-bottom:3px solid var(--accent);border-left:none;background:transparent}
+  .form-grid{grid-template-columns:1fr}
+  .table-wrap{overflow-x:auto}
+  .btn{min-height:44px}
+  .form-control{min-height:44px}
+}
+@media(max-width:480px){
+  .stats-grid{grid-template-columns:1fr}
+  .panel-header{flex-direction:column;align-items:flex-start;gap:16px}
+  .panel-actions{flex-direction:column;width:100%}
+  .panel-actions input, .panel-actions select{width:100%!important}
+}
