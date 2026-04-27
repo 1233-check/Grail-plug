@@ -23,9 +23,9 @@ button{cursor:pointer;border:none;background:none;font-family:inherit}
 /* ===== LOADER ===== */
 .loader{position:fixed;inset:0;z-index:9999;background:#0C1014;display:flex;align-items:center;justify-content:center;transition:opacity 0.6s,visibility 0.6s}
 .loader.hidden{opacity:0;visibility:hidden;pointer-events:none}
-.loader-inner{text-align:center}
-.loader-logo{width:160px;height:auto;animation:pulse 1.5s ease-in-out infinite}
-@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.05);opacity:0.8}}
+.loader-inner{display:flex;align-items:center;justify-content:center;background:#EAEAEA;width:220px;height:220px;border-radius:50%;animation:pulse 1.5s ease-in-out infinite}
+.loader-logo{width:160px;height:auto;object-fit:contain}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
 
 /* ===== ANNOUNCEMENT BAR ===== */
 .announcement-bar{background:#0C1014;color:#FFF;padding:10px 0;overflow:hidden;font-size:11px;letter-spacing:3px;font-weight:600}
