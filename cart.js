@@ -93,24 +93,75 @@ const GrailCart = {
     const items = this.getItems();
     if (items.length === 0) return;
 
-    const order = {
-      userId: user.id, userName: user.name, userEmail: user.email,
-      items: items, total: this.getTotal()
-    };
-    await GrailData.addOrder(order);
+    const total = this.getTotal();
 
-    // Mark items as sold
-    for (const item of items) {
-      await GrailData.updateProduct(item.id, { status: 'sold' });
+    // Disable checkout button while processing
+    const checkoutBtn = document.querySelector('.cart-checkout-btn');
+    if (checkoutBtn) {
+      checkoutBtn.disabled = true;
+      checkoutBtn.textContent = 'PROCESSING…';
     }
 
-    this.clear();
-    this.closeDrawer();
+    // Start Razorpay payment
+    RazorpayCheckout.startPayment({
+      amount: total,
+      name: user.name,
+      email: user.email,
+      items: items,
 
-    const content = await GrailData.getSiteContent();
-    const igUrl = content.contact?.igUrl || 'https://www.instagram.com/grail_plug.co/';
-    window.open(igUrl, '_blank');
-    setTimeout(() => location.reload(), 500);
+      onSuccess: async ({ paymentId, orderId }) => {
+        // Payment verified — save order to Supabase
+        const order = {
+          userId: user.id, userName: user.name, userEmail: user.email,
+          items: items, total: total,
+          razorpayPaymentId: paymentId, razorpayOrderId: orderId
+        };
+        await GrailData.addOrder(order);
+
+        // Mark items as sold
+        for (const item of items) {
+          await GrailData.updateProduct(item.id, { status: 'sold' });
+        }
+
+        GrailCart.clear();
+        GrailCart.closeDrawer();
+        GrailCart._showToast('✅ Payment successful! Your grails are on the way.', 'success');
+        setTimeout(() => location.reload(), 2000);
+      },
+
+      onFailure: (errorMsg) => {
+        // Re-enable button
+        if (checkoutBtn) {
+          checkoutBtn.disabled = false;
+          checkoutBtn.textContent = 'CHECKOUT — PAY NOW';
+        }
+        if (errorMsg !== 'Payment cancelled.') {
+          GrailCart._showToast(`❌ ${errorMsg}`, 'error');
+        }
+      }
+    });
+  },
+
+  /** Show a toast notification */
+  _showToast(message, type = 'info') {
+    // Remove existing toast
+    const existing = document.getElementById('grail-toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.id = 'grail-toast';
+    toast.className = `grail-toast grail-toast--${type}`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    // Animate in
+    requestAnimationFrame(() => toast.classList.add('show'));
+
+    // Auto-dismiss
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => toast.remove(), 400);
+    }, 4000);
   },
 
   init() {

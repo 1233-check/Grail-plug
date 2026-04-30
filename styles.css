@@ -326,4 +326,18 @@ button{cursor:pointer;border:none;background:none;font-family:inherit}
 .cart-total{font-family:var(--font-mono);font-size:22px;font-weight:700}
 .cart-shipping-note{font-size:11px;color:var(--text-secondary);margin-bottom:16px}
 .cart-checkout-btn{width:100%;justify-content:center}
+.cart-checkout-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
 
+/* ===== TOAST NOTIFICATIONS ===== */
+.grail-toast{
+  position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(100px);
+  z-index:10000;padding:16px 28px;border-radius:var(--radius-lg);
+  font-size:14px;font-weight:600;letter-spacing:0.5px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.18);
+  opacity:0;transition:transform 0.4s cubic-bezier(0.4,0,0.2,1),opacity 0.4s;
+  max-width:90vw;text-align:center;
+}
+.grail-toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.grail-toast--success{background:#0C1014;color:#FFF}
+.grail-toast--error{background:#ED4956;color:#FFF}
+.grail-toast--info{background:var(--surface);color:var(--text);border:1px solid var(--border)}

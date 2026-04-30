@@ -389,15 +389,17 @@
                     <span class="cart-total" id="cart-total">₹0</span>
                 </div>
                 <p class="cart-shipping-note">Shipping calculated after checkout</p>
-                <button class="btn btn-primary cart-checkout-btn" onclick="GrailCart.checkout()">CHECKOUT VIA DM</button>
+                <button class="btn btn-primary cart-checkout-btn" onclick="GrailCart.checkout()">CHECKOUT — PAY NOW</button>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script src="supabase-config.js"></script>
     <script src="products.js"></script>
     <script src="auth.js"></script>
+    <script src="razorpay-checkout.js"></script>
     <script src="cart.js"></script>
     <script src="app.js"></script>
 </body>
