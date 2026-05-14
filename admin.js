@@ -43,22 +43,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.location.href = 'index.html';
   });
 
-  // --- Dashboard ---
+  // =============================================
+  // FIX #6: Revenue from actual order totals
+  // FIX #1: Pass real orders to revenue chart
+  // =============================================
   async function renderDashboard() {
     const products = await GrailData.getProducts();
     const orders = await GrailData.getOrders();
 
     const available = products.filter(p => p.status === 'available').length;
     const sold = products.filter(p => p.status === 'sold').length;
-    const soldRevenue = products.filter(p => p.status === 'sold').reduce((sum, p) => sum + p.price, 0);
+
+    // Fix #6: Use actual order revenue; fall back to sold product prices if no orders
+    const orderRevenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
+    const productRevenue = products.filter(p => p.status === 'sold').reduce((sum, p) => sum + p.price, 0);
+    const revenue = orderRevenue > 0 ? orderRevenue : productRevenue;
 
     document.getElementById('dash-available').textContent = available;
     document.getElementById('dash-sold').textContent = sold;
-    document.getElementById('dash-revenue').textContent = `₹${soldRevenue.toLocaleString('en-IN')}`;
+    document.getElementById('dash-revenue').textContent = `₹${revenue.toLocaleString('en-IN')}`;
     document.getElementById('dash-orders-count').textContent = orders.length;
 
     renderCategoryChart(products);
-    renderRevenueChart();
+    renderRevenueChart(orders); // Fix #1: pass real orders
   }
 
   function renderCategoryChart(products) {
@@ -83,27 +90,101 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  function renderRevenueChart() {
+  // =============================================
+  // FIX #1: Revenue chart from real order data
+  // =============================================
+  function renderRevenueChart(orders) {
     const canvas = document.getElementById('revenueChart');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const data = [1200, 4500, 0, 8900, 3200, 1500, 6000];
-    const max = Math.max(...data) || 10000;
+
+    // Build last 7 days
+    const days = [];
+    const labels = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      d.setHours(0, 0, 0, 0);
+      days.push(d);
+      labels.push(d.toLocaleDateString('en-IN', { weekday: 'short' }));
+    }
+
+    // Aggregate order totals per day
+    const data = days.map(day => {
+      const nextDay = new Date(day);
+      nextDay.setDate(nextDay.getDate() + 1);
+      return orders
+        .filter(o => {
+          const od = new Date(o.date);
+          return od >= day && od < nextDay;
+        })
+        .reduce((sum, o) => sum + (o.total || 0), 0);
+    });
+
+    const max = Math.max(...data, 1000);
     const padding = 40, w = canvas.width - padding * 2, h = canvas.height - padding * 2;
     const barW = w / data.length - 10;
-    ctx.fillStyle = '#0C1014';
+
+    // Draw bars with gradient
     data.forEach((val, i) => {
-      const barH = (val / max) * h;
-      ctx.fillRect(padding + i * (w / data.length) + 5, canvas.height - padding - barH, barW, barH);
+      const barH = Math.max((val / max) * h, val > 0 ? 4 : 0);
+      const x = padding + i * (w / data.length) + 5;
+      const y = canvas.height - padding - barH;
+      const grad = ctx.createLinearGradient(x, y, x, canvas.height - padding);
+      grad.addColorStop(0, '#0C1014');
+      grad.addColorStop(1, '#2B3036');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      const r = Math.min(4, barW / 2);
+      ctx.moveTo(x, canvas.height - padding);
+      ctx.lineTo(x, y + r);
+      ctx.arcTo(x, y, x + r, y, r);
+      ctx.arcTo(x + barW, y, x + barW, y + r, r);
+      ctx.lineTo(x + barW, canvas.height - padding);
+      ctx.closePath();
+      ctx.fill();
     });
-    ctx.beginPath(); ctx.moveTo(padding, canvas.height - padding);
+
+    // X-axis line
+    ctx.beginPath();
+    ctx.moveTo(padding, canvas.height - padding);
     ctx.lineTo(canvas.width - padding, canvas.height - padding);
-    ctx.strokeStyle = '#E0E4E8'; ctx.stroke();
+    ctx.strokeStyle = '#E0E4E8';
+    ctx.stroke();
+
+    // Day labels
+    ctx.fillStyle = '#6A717A';
+    ctx.font = '11px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    labels.forEach((label, i) => {
+      const x = padding + i * (w / data.length) + 5 + barW / 2;
+      ctx.fillText(label, x, canvas.height - padding + 16);
+    });
+
+    // Value labels on top of bars
+    ctx.fillStyle = '#0C1014';
+    ctx.font = '10px Space Mono, monospace';
+    data.forEach((val, i) => {
+      if (val > 0) {
+        const barH = (val / max) * h;
+        const x = padding + i * (w / data.length) + 5 + barW / 2;
+        ctx.fillText(`₹${val.toLocaleString('en-IN')}`, x, canvas.height - padding - barH - 6);
+      }
+    });
+
+    // "No data" message if all zeros
+    if (data.every(v => v === 0)) {
+      ctx.fillStyle = '#6A717A';
+      ctx.font = '13px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('No order revenue in the last 7 days', canvas.width / 2, canvas.height / 2);
+    }
   }
 
   // --- Products ---
   let editingProductId = null;
+  let selectedImageFile = null; // Fix #2: track uploaded file
   const prodModal = document.getElementById('admin-product-modal');
 
   async function renderProducts() {
@@ -146,10 +227,96 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('prod-filter').addEventListener('change', () => renderProducts());
   document.getElementById('btn-add-product').addEventListener('click', () => openProductModal(null));
 
+  // =============================================
+  // FIX #3: Dynamic measurements editor helpers
+  // =============================================
+  function addMeasurementRow(key = '', val = '') {
+    const container = document.getElementById('ap-measurements');
+    const row = document.createElement('div');
+    row.className = 'meas-row';
+    row.innerHTML = `
+      <input type="text" class="form-control meas-key" placeholder="e.g. Chest" value="${key}">
+      <input type="text" class="form-control meas-val" placeholder="e.g. 38 inches" value="${val}">
+      <button type="button" class="meas-remove" title="Remove">×</button>
+    `;
+    row.querySelector('.meas-remove').addEventListener('click', () => row.remove());
+    container.appendChild(row);
+  }
+
+  document.getElementById('ap-add-measurement').addEventListener('click', () => addMeasurementRow());
+
+  // =============================================
+  // FIX #2: Image upload with drag-and-drop
+  // =============================================
+  const uploadZone = document.getElementById('ap-upload-zone');
+  const fileInput = document.getElementById('ap-file-input');
+  const uploadPreview = document.getElementById('ap-upload-preview');
+
+  uploadZone.addEventListener('click', () => fileInput.click());
+  uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+  uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+  uploadZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadZone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) handleImageFile(file);
+  });
+
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) handleImageFile(fileInput.files[0]);
+  });
+
+  function handleImageFile(file) {
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image must be under 5MB.');
+      return;
+    }
+    selectedImageFile = file;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      uploadPreview.src = e.target.result;
+      uploadPreview.style.display = 'block';
+      uploadZone.classList.add('has-preview');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function resetUploadZone() {
+    selectedImageFile = null;
+    uploadPreview.src = '';
+    uploadPreview.style.display = 'none';
+    uploadZone.classList.remove('has-preview');
+    fileInput.value = '';
+  }
+
+  async function uploadImageToSupabase(file) {
+    const ext = file.name.split('.').pop().toLowerCase();
+    const fileName = `product_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { data, error } = await _supabaseClient.storage
+      .from('product-images')
+      .upload(fileName, file, { contentType: file.type, upsert: true });
+    if (error) {
+      console.error('Storage upload error:', error);
+      // Fallback: use base64 data URL if storage isn't set up
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.readAsDataURL(file);
+      });
+    }
+    const { data: urlData } = _supabaseClient.storage.from('product-images').getPublicUrl(fileName);
+    return urlData.publicUrl;
+  }
+
+  // --- Open Product Modal (Fix #3: populate measurements) ---
   async function openProductModal(id) {
     editingProductId = id;
     const form = document.getElementById('ap-form');
     form.reset();
+    resetUploadZone();
+    const measContainer = document.getElementById('ap-measurements');
+    measContainer.innerHTML = '';
+
     const catSelect = document.getElementById('ap-category');
     const cats = await GrailData.getCategories();
     catSelect.innerHTML = cats.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
@@ -167,15 +334,53 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('ap-sizeLabel').value = p.sizeLabel;
         document.getElementById('ap-image').value = p.image;
         document.getElementById('ap-desc').value = p.desc || '';
+        // Show existing image as preview
+        if (p.image) {
+          uploadPreview.src = p.image;
+          uploadPreview.style.display = 'block';
+          uploadZone.classList.add('has-preview');
+        }
+        // Fix #3: Populate measurements editor
+        if (p.measurements && typeof p.measurements === 'object') {
+          Object.entries(p.measurements).forEach(([key, val]) => addMeasurementRow(key, val));
+        }
       }
     } else {
       document.getElementById('ap-modal-title').textContent = 'Add Product';
+      // Add two empty rows by default for new products
+      addMeasurementRow();
+      addMeasurementRow();
     }
     prodModal.classList.add('active');
   }
 
+  // --- Product Form Submit (Fix #2 + Fix #3) ---
   document.getElementById('ap-form').addEventListener('submit', async (e) => {
     e.preventDefault();
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'SAVING...';
+
+    // Fix #2: Handle image upload
+    let imageUrl = document.getElementById('ap-image').value;
+    if (selectedImageFile) {
+      imageUrl = await uploadImageToSupabase(selectedImageFile);
+    }
+    if (!imageUrl) {
+      alert('Please upload an image or provide a URL.');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'SAVE PRODUCT';
+      return;
+    }
+
+    // Fix #3: Collect measurements from dynamic inputs
+    const measurements = {};
+    document.querySelectorAll('.meas-row').forEach(row => {
+      const key = row.querySelector('.meas-key').value.trim();
+      const val = row.querySelector('.meas-val').value.trim();
+      if (key && val) measurements[key] = val;
+    });
+
     const p = {
       name: document.getElementById('ap-name').value,
       brand: document.getElementById('ap-brand').value,
@@ -184,12 +389,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       status: document.getElementById('ap-status').value,
       size: document.getElementById('ap-size').value,
       sizeLabel: document.getElementById('ap-sizeLabel').value,
-      image: document.getElementById('ap-image').value,
+      image: imageUrl,
       desc: document.getElementById('ap-desc').value,
-      measurements: { Details: "Added via Admin" }
+      measurements: measurements
     };
+
     if (editingProductId) { await GrailData.updateProduct(editingProductId, p); }
     else { await GrailData.addProduct(p); }
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'SAVE PRODUCT';
     prodModal.classList.remove('active');
     await renderProducts();
   });
@@ -216,6 +425,31 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     });
   }
+
+  // =============================================
+  // FIX #4: Wire up "Add Category" button + modal
+  // =============================================
+  const catModal = document.getElementById('admin-category-modal');
+  document.getElementById('btn-add-category').addEventListener('click', () => {
+    document.getElementById('ac-form').reset();
+    document.getElementById('ac-icon').value = '📦';
+    catModal.classList.add('active');
+  });
+
+  document.getElementById('ac-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('ac-name').value.trim();
+    const icon = document.getElementById('ac-icon').value.trim() || '📦';
+    if (!name) return;
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'ADDING...';
+    await GrailData.addCategory({ name, icon });
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'ADD CATEGORY';
+    catModal.classList.remove('active');
+    await renderCategories();
+  });
 
   // --- Orders ---
   async function renderOrders() {
@@ -303,14 +537,24 @@ document.addEventListener('DOMContentLoaded', async () => {
           </div>
           <button class="btn btn-primary" id="ce-save-ann" style="margin-top:24px">SAVE ANNOUNCEMENTS</button>
         `;
+        // =============================================
+        // FIX #5: Single write for announcements (removed duplicate GrailData.updateSiteSection call)
+        // =============================================
         const saveAnn = document.getElementById('ce-save-ann');
         if (saveAnn) {
           saveAnn.addEventListener('click', async () => {
             const lines = document.getElementById('ce-announcements').value.split('\n').filter(l => l.trim());
-            await GrailData.updateSiteSection('announcements', lines);
-            // For announcements, we store as array directly
             const { error } = await _supabaseClient.from('site_content').upsert({ section: 'announcements', data: lines });
-            if (!error) { saveAnn.textContent = 'SAVED ✓'; saveAnn.style.background = 'var(--success)'; setTimeout(() => { saveAnn.textContent = 'SAVE ANNOUNCEMENTS'; saveAnn.style.background = ''; }, 2000); }
+            if (!error) {
+              saveAnn.textContent = 'SAVED ✓';
+              saveAnn.style.background = 'var(--success)';
+              setTimeout(() => { saveAnn.textContent = 'SAVE ANNOUNCEMENTS'; saveAnn.style.background = ''; }, 2000);
+            } else {
+              console.error('Announcements save error:', error);
+              saveAnn.textContent = 'ERROR';
+              saveAnn.style.background = 'var(--sold)';
+              setTimeout(() => { saveAnn.textContent = 'SAVE ANNOUNCEMENTS'; saveAnn.style.background = ''; }, 2000);
+            }
           });
         }
         return;
